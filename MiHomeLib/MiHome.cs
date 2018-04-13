@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MiHomeLib.Commands;
 using MiHomeLib.Devices;
+using MiHomeLib.Transport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -15,13 +16,13 @@ namespace MiHomeLib
     {
         private Gateway _gateway;
         private readonly string _gatewaySid;
-        private static UdpTransport _transport;
+        private static ITransport _transport;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ConcurrentBag<MiHomeDevice> _devicesList = new ConcurrentBag<MiHomeDevice>();
         private readonly Dictionary<string, string> _namesMap;
 
         private const int ReadDeviceInterval = 100;
-        
+
         private readonly Dictionary<string, Func<string, MiHomeDevice>> _devicesMap = new Dictionary<string, Func<string, MiHomeDevice>>
         {
             {"sensor_ht", sid => new ThSensor(sid)},
@@ -37,7 +38,8 @@ namespace MiHomeLib
 
         private readonly Dictionary<string, Action<ResponseCommand>> _commandsToActions;
 
-        public MiHome(Dictionary<string, string> namesMap, string gatewayPassword = null, string gatewaySid = null): this(gatewayPassword, gatewaySid)
+        public MiHome(Dictionary<string, string> namesMap, TransportType transportType = TransportType.Socket, string gatewayPassword = null, string gatewaySid = null)
+            : this(transportType, gatewayPassword, gatewaySid)
         {
             if (namesMap.GroupBy(x => x.Value).Any(x => x.Count() > 1))
             {
@@ -47,7 +49,7 @@ namespace MiHomeLib
             _namesMap = namesMap;
         }
 
-        public MiHome(string gatewayPassword = null, string gatewaySid = null)
+        public MiHome(TransportType transportType = TransportType.Socket, string gatewayPassword = null, string gatewaySid = null)
         {
             _commandsToActions = new Dictionary<string, Action<ResponseCommand>>
             {
@@ -59,7 +61,7 @@ namespace MiHomeLib
 
             _gatewaySid = gatewaySid;
 
-            _transport = new UdpTransport(gatewayPassword);
+            _transport = new SocketTransport(gatewayPassword);
 
             Task.Run(() => StartReceivingMessages(_cts.Token), _cts.Token);
 
@@ -162,8 +164,8 @@ namespace MiHomeLib
 
         private void UpdateDevicesList(ResponseCommand cmd)
         {
-            if(cmd.Model == "gateway") return; // no need to add gateway to list of devices
-            
+            if (cmd.Model == "gateway") return; // no need to add gateway to list of devices
+
             var device = _devicesList.FirstOrDefault(x => x.Sid == cmd.Sid);
 
             if (device != null) return;
@@ -205,6 +207,17 @@ namespace MiHomeLib
             }
 
             //TODO: if device was removed we need to know it somehow
+        }
+
+        private ITransport GetTransport(TransportType transportType, string gatewayPassword)
+        {
+            switch (transportType)
+            {
+                case TransportType.Socket: return new SocketTransport(gatewayPassword);
+                case TransportType.UdpClient: return new UdpClientTransport(gatewayPassword);
+                default:
+                    throw new ArgumentException($"TransportType '{transportType}' is NOT supported!", nameof(transportType));
+            }
         }
     }
 }

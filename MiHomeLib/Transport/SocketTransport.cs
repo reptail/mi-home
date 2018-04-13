@@ -9,9 +9,9 @@ using System.Security.Cryptography;
 using MiHomeLib.Commands;
 using Newtonsoft.Json;
 
-namespace MiHomeLib
+namespace MiHomeLib.Transport
 {
-    public class UdpTransport: IDisposable
+    public class SocketTransport : IDisposable, ITransport
     {
         private readonly string _gatewayWritePassword;
         private readonly string _multicastAddress;
@@ -23,7 +23,7 @@ namespace MiHomeLib
 
         private static string _currentToken;
 
-        public UdpTransport(string gatewayWritePassword, string multicastAddress = "224.0.0.50", int serverPort = 9898)
+        public SocketTransport(string gatewayWritePassword, string multicastAddress = "224.0.0.50", int serverPort = 9898)
         {
             _gatewayWritePassword = gatewayWritePassword;
             _multicastAddress = multicastAddress;

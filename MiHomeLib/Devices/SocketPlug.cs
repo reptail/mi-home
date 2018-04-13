@@ -1,13 +1,14 @@
 ﻿using System.Globalization;
 using MiHomeLib.Commands;
+using MiHomeLib.Transport;
 using Newtonsoft.Json.Linq;
 
 namespace MiHomeLib.Devices
 {
     public class SocketPlug : MiHomeDevice
     {
-        private readonly UdpTransport _transport;
-        public SocketPlug(string sid, UdpTransport transport) : base(sid, "plug")
+        private readonly ITransport _transport;
+        public SocketPlug(string sid, ITransport transport) : base(sid, "plug")
         {
             _transport = transport;
         }
