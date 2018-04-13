@@ -10,7 +10,7 @@ namespace MiHomeConsole
         {
             // pwd of your gateway (optional, needed only to send commands to your devices) 
             // and sid of your gateway (optional, use only when you have 2 gateways in your LAN)
-            using (var miHome = new MiHome())
+            using (var miHome = new MiHome(transportType: MiHomeLib.Transport.TransportType.UdpClient))
             {
                 Task.Delay(5000).Wait();
 
