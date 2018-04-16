@@ -107,8 +107,14 @@ namespace MiHomeLib.Transport
 
         public void Dispose()
         {
-            _socket?.Shutdown(SocketShutdown.Both);
-            _socket?.Dispose();
+            try
+            {
+                _socket?.Shutdown(SocketShutdown.Both);
+                _socket?.Dispose();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public void SetToken(string token)

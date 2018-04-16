@@ -107,9 +107,15 @@ namespace MiHomeLib.Transport
 
         public void Dispose()
         {
-            _udpClient?.DropMulticastGroup(IPAddress.Parse(_multicastAddress));
-            _udpClient?.Client?.Shutdown(SocketShutdown.Both);
-            _udpClient?.Dispose();
+            try
+            {
+                _udpClient?.DropMulticastGroup(IPAddress.Parse(_multicastAddress));
+                _udpClient?.Client?.Shutdown(SocketShutdown.Both);
+                _udpClient?.Dispose();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public void SetToken(string token)
