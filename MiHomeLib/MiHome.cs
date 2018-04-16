@@ -61,7 +61,7 @@ namespace MiHomeLib
 
             _gatewaySid = gatewaySid;
 
-            _transport = new SocketTransport(gatewayPassword);
+            _transport = GetTransport(transportType, gatewayPassword);
 
             Task.Run(() => StartReceivingMessages(_cts.Token), _cts.Token);
 
