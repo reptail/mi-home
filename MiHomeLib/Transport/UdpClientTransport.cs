@@ -100,9 +100,16 @@ namespace MiHomeLib.Transport
 
         public async Task<string> ReceiveAsync()
         {
-            UdpReceiveResult result = await _udpClient.ReceiveAsync();            
+            try
+            {
+                UdpReceiveResult result = await _udpClient.ReceiveAsync();
 
-            return Encoding.ASCII.GetString(result.Buffer);
+                return Encoding.ASCII.GetString(result.Buffer);
+            }
+            catch (Exception ex)
+            {
+                return $"{{ \"Cmd\": \"Err\", \"Data\": \"{ex.Message}\" }}";
+            }
         }
 
         public void Dispose()
@@ -113,9 +120,7 @@ namespace MiHomeLib.Transport
                 _udpClient?.Client?.Shutdown(SocketShutdown.Both);
                 _udpClient?.Dispose();
             }
-            catch (Exception)
-            {
-            }
+            catch { }
         }
 
         public void SetToken(string token)
